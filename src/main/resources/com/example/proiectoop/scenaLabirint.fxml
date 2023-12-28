@@ -8,7 +8,7 @@
    <center>
       <Pane fx:id="pane" prefHeight="400.0" prefWidth="400.0" style="-fx-background-color: gray;" BorderPane.alignment="CENTER">
          <children>
-            <Button layoutX="518.0" layoutY="51.0" mnemonicParsing="false" text="Genereaza labinit" />
+            <Button fx:id="generateMazeButton" layoutX="518.0" layoutY="51.0" mnemonicParsing="false" onAction="#onGenerateMazeButton" text="Genereaza labinit" />
             <Button layoutX="518.0" layoutY="93.0" mnemonicParsing="false" text="Rezolva labint" />
             <Button layoutX="518.0" layoutY="137.0" mnemonicParsing="false" text="Reset" />
          </children></Pane>

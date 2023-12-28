@@ -16,9 +16,19 @@ public class Maze {
         this.borderedMaze = initMaze(getNum() + 2);
     }
 
-    private int getNum()
+    public int getNum()
     {
         return num;
+    }
+
+    public char[][] getMaze()
+    {
+        return maze;
+    }
+
+    public char[][] getBorderedMaze()
+    {
+        return borderedMaze;
     }
 
     public void generate()
