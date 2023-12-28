@@ -1,19 +1,19 @@
 package com.example.proiectoop.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Stack;
+import java.util.*;
 
 public class Maze {
     private int num;
     private char[][] maze;
     private char[][] borderedMaze;
+    private Point[][] parent;
+
     public Maze(int num)
     {
         this.num = num;
         this.maze = initMaze(getNum());
         this.borderedMaze = initMaze(getNum() + 2);
+        this.parent = new Point[getNum()][getNum()];
     }
 
     public int getNum()
@@ -33,9 +33,24 @@ public class Maze {
 
     public void generate()
     {
+        maze[0][0] = 'O';
+        maze[getNum() - 1][getNum() - 1] = 'O';
+
         int newNum = getNum() + 2;
         dfs();
+        copyAsBordered(newNum);
+    }
 
+    public void solve()
+    {
+        int newNum = getNum() + 2;
+        bfs();
+        generatePath();
+        copyAsBordered(newNum);
+    }
+
+    private void copyAsBordered(int newNum)
+    {
         for(int i = 0; i < newNum; ++i)
         {
             for(int j = 0; j < newNum; ++j)
@@ -54,11 +69,10 @@ public class Maze {
     private void dfs()
     {
         int[][] visitedForward = initVisited(getNum());
-        visitedForward[0][0] = 1;
-        maze[0][0] = 'O';
-
         Stack<Point> stackForward = new Stack<>();
+
         stackForward.push(new Point(0, 0));
+        visitedForward[0][0] = 1;
 
         while(!stackForward.empty())
         {
@@ -71,7 +85,6 @@ public class Maze {
 
         int[][] visitedBackward = initVisited(getNum());
         visitedBackward[getNum() - 1][getNum() - 1] = 1;
-        maze[getNum() - 1][getNum() - 1] = 'O';
 
         Stack<Point> stackBackward = new Stack<>();
         stackBackward.push(new Point(getNum() - 1, getNum() - 1));
@@ -91,15 +104,46 @@ public class Maze {
         }
     }
 
+    private void bfs()
+    {
+        int[][] dir = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+        int[][] visited = initVisited(getNum());
+
+        Queue<Point> queue = new LinkedList<>();
+        queue.add(new Point(0, 0));
+        visited[0][0] = 1;
+
+        while(!queue.isEmpty())
+        {
+            Point current = queue.peek();
+            queue.remove();
+
+            for(int i = 0; i < 4; ++i)
+            {
+                int newRow = current.getRow() + dir[i][0];
+                int newCol = current.getCol() + dir[i][1];
+                Point newPoint = new Point(newRow, newCol);
+
+                if(isValid(newPoint) && visited[newRow][newCol] == 0 && maze[newRow][newCol] != 'W')
+                {
+                    queue.add(newPoint);
+                    parent[newRow][newCol] = current;
+                    visited[newRow][newCol] = 1;
+                }
+            }
+        }
+    }
+
     private void visit(int[][] visited, Stack<Point> stack, Point current, int currentRow, int currentCol)
     {
-        List<Point> neighbors = getNeighbors(current);
+        List<Point> neighbors = getWallNeighbors(current);
         List<Point> unvisitedNeighbors = new ArrayList<>();
 
         for(Point point: neighbors)
         {
             int row = point.getRow();
             int col = point.getCol();
+
             if(visited[row][col] == 0)
             {
                 unvisitedNeighbors.add(point);
@@ -124,6 +168,20 @@ public class Maze {
         {
             stack.pop();
         }
+    }
+
+    private void generatePath()
+    {
+        Point current = new Point(getNum() - 1, getNum() - 1);
+
+        while(current != null)
+        {
+            maze[current.getRow()][current.getCol()] = 'P';
+            current = parent[current.getRow()][current.getCol()];
+        }
+
+        maze[0][0] = 'O';
+        maze[getNum() - 1][getNum() - 1] = 'O';
     }
 
     private char[][] initMaze(int num)
@@ -163,7 +221,7 @@ public class Maze {
         return point.getRow() >= 0 && point.getRow() < getNum() && point.getCol() >= 0 && point.getCol() < getNum();
     }
 
-    private List<Point> getNeighbors(Point point)
+    private List<Point> getWallNeighbors(Point point)
     {
         int[][] dir = {{-2, 0}, {0, -2}, {2, 0}, {0, 2}};
         List<Point> neighbors = new ArrayList<>();
