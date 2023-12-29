@@ -7,8 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 
@@ -20,7 +20,7 @@ public class ScenaLabirintController {
     @FXML
     private Button solveMazeButton;
     @FXML
-    private Button backButton;
+    private Button menuButton;
     @FXML
     private Label currentPositionLabel;
 
@@ -59,7 +59,7 @@ public class ScenaLabirintController {
         pane.getChildren().clear();
         pane.getChildren().add(generateMazeButton);
         pane.getChildren().add(solveMazeButton);
-        pane.getChildren().add(backButton);
+        pane.getChildren().add(menuButton);
         pane.getChildren().add(currentPositionLabel);
 
         game = true;
@@ -87,7 +87,7 @@ public class ScenaLabirintController {
 
     /***
      * Listener la WASD
-     * @param event event keyboard
+     * @param event keyboard event
      */
 
     public void onKeyPressed(KeyEvent event)
@@ -112,8 +112,9 @@ public class ScenaLabirintController {
 
                     if(eligibleForColoring(row, col - 40))
                     {
+                        colorCellAsWhite(row, col);
                         col -= 40;
-                        colorCell();
+                        colorCellAsBlue(row, col);
                     }
 
                     break;
@@ -129,8 +130,9 @@ public class ScenaLabirintController {
 
                     if(eligibleForColoring(row, col + 40))
                     {
+                        colorCellAsWhite(row, col);
                         col += 40;
-                        colorCell();
+                        colorCellAsBlue(row, col);
                     }
 
                     break;
@@ -146,8 +148,9 @@ public class ScenaLabirintController {
 
                     if(eligibleForColoring(row - 40, col))
                     {
+                        colorCellAsWhite(row, col);
                         row -= 40;
-                        colorCell();
+                        colorCellAsBlue(row, col);
                     }
 
                     break;
@@ -163,8 +166,9 @@ public class ScenaLabirintController {
 
                     if(eligibleForColoring(row + 40, col))
                     {
+                        colorCellAsWhite(row, col);
                         row += 40;
-                        colorCell();
+                        colorCellAsBlue(row, col);
                     }
 
                     break;
@@ -194,7 +198,7 @@ public class ScenaLabirintController {
         pane.getChildren().clear();
         pane.getChildren().add(generateMazeButton);
         pane.getChildren().add(solveMazeButton);
-        pane.getChildren().add(backButton);
+        pane.getChildren().add(menuButton);
         pane.getChildren().add(currentPositionLabel);
 
         game = false;
@@ -206,6 +210,20 @@ public class ScenaLabirintController {
             {
                 Rectangle rectangle = setRectangle(i, j, solvedMaze);
                 pane.getChildren().add(rectangle);
+
+                // highlight the path
+                Color color = getColorAtPosition(i, j);
+                if(color != null)
+                {
+                    int r = (int) (color.getRed() * 255);
+                    int g = (int) (color.getGreen() * 255);
+                    int b = (int) (color.getBlue() * 255);
+
+                    if(isVisitedCell(r, g, b))
+                    {
+                        addDotInCenter(rectangle);
+                    }
+                }
             }
         }
 
@@ -216,58 +234,9 @@ public class ScenaLabirintController {
      * Inapoi la meniu
      */
 
-    public void onBackButton()
+    public void onMenuButton()
     {
         initialize();
-    }
-
-    /***
-     * Metoda de debug, listener la mouse
-     * @param event event mouse
-     */
-
-    public void onMouseClicked(MouseEvent event)
-    {
-        if(!game)
-        {
-            return;
-        }
-
-        double mouseX = event.getX();
-        double mouseY = event.getY();
-
-        int clickedRow = (int) (mouseX / 40) * 40; // normalizeaza pe axa Ox
-        int clickedCol = (int) (mouseY / 40) * 40; // normalizeaza pe axa Oy
-
-        Rectangle clickedRectangle = getRectangleAtPosition(clickedRow, clickedCol);
-        Color clickedColor = getColorAtPosition(clickedRow, clickedCol);
-
-        if(clickedRectangle == null || clickedColor == null)
-        {
-            return;
-        }
-
-        // converteste in rgb
-        int red = (int) (clickedColor.getRed() * 255);
-        int green = (int) (clickedColor.getGreen() * 255);
-        int blue = (int) (clickedColor.getBlue() * 255);
-
-        System.out.println("Clicked at " + clickedRow + " " + clickedCol);
-
-        System.out.println("RGB Value: " + red + " " + green + " " + blue);
-
-        if(red == 0 && green == 0 && blue == 0) // perete
-        {
-            System.out.println("Perete!");
-        }
-        else if(red == 255 && green == 192 && blue == 203) // margine
-        {
-            System.out.println("Margine!");
-        }
-        else if(red == 0 && green == 255 && blue == 0) // punct de start/finish
-        {
-            System.out.println("Incolorabil!");
-        }
     }
 
     /***
@@ -318,7 +287,8 @@ public class ScenaLabirintController {
     private boolean eligibleForColoring(int row, int col)
     {
         Color colorAtPosition = getColorAtPosition(row, col);
-        if(colorAtPosition == null)
+        Rectangle rectangleAtPosition = getRectangleAtPosition(row, col);
+        if(colorAtPosition == null || rectangleAtPosition == null)
         {
             return false;
         }
@@ -346,10 +316,13 @@ public class ScenaLabirintController {
     }
 
     /***
-     * Coloreaza o celula ca fiind vizitata (Color.BLUE) si trateaza cazul de finish
+     * Coloreaza o celula ca fiind vizitata (Color.WHITE) si trateaza cazul de finish
+     * Impreuna cu metoda colorCellAsWhite, da impresia de animate
+     * @param row rand
+     * @param col coloana
      */
 
-    private void colorCell()
+    private void colorCellAsBlue(int row, int col)
     {
         Rectangle rectangle = getRectangleAtPosition(row, col);
         if(rectangle == null || isStart())
@@ -364,6 +337,31 @@ public class ScenaLabirintController {
         }
 
         rectangle.setFill(Color.BLUE);
+        addDotInCenter(rectangle);
+    }
+
+    /***
+     * Coloreaza o celula ca fiind nevizitata (Color.WHITE) si trateaza cazul de finish.
+     * Impreuna cu metoda colorCellAsBlue da impresia de animatie
+     * @param row rand
+     * @param col coloana
+     */
+
+    private void colorCellAsWhite(int row, int col)
+    {
+        Rectangle rectangle = getRectangleAtPosition(row, col);
+        if(rectangle == null || isStart())
+        {
+            return;
+        }
+
+        if(isFinish())
+        {
+            game = false;
+            return;
+        }
+
+        rectangle.setFill(Color.WHITE);
     }
 
     /***
@@ -413,6 +411,19 @@ public class ScenaLabirintController {
     }
 
     /***
+     * Verifica daca o celula este vizitata
+     * @param red red
+     * @param green green
+     * @param blue blue
+     * @return true/false
+     */
+
+    private boolean isVisitedCell(int red, int green, int blue)
+    {
+        return red == 0 && green == 0 && blue == 255;
+    }
+
+    /***
      * Ia culoarea unei celule de la pozitia (row, col)
      * @param row rand
      * @param col coloana
@@ -456,5 +467,19 @@ public class ScenaLabirintController {
         }
 
         return null;
+    }
+
+    /***
+     * Adauga un punct in mijlocul celulei
+     * @param rectangle celula
+     */
+
+    private void addDotInCenter(Rectangle rectangle)
+    {
+        double centerX = rectangle.getX() + rectangle.getWidth() / 2;
+        double centerY = rectangle.getY() + rectangle.getHeight() / 2;
+        Circle dot = new Circle(centerX, centerY, 5, Color.WHITE);
+
+        pane.getChildren().add(dot);
     }
 }

@@ -14,6 +14,7 @@ public class Main extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("scenaLabirint.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 640, 480);
         stage.setTitle("Joc labirint");
+        stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
     }

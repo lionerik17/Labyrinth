@@ -7,11 +7,11 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.proiectoop.controller.ScenaLabirintController">
    <center>
-      <Pane fx:id="pane" onKeyPressed="#onKeyPressed" onMouseClicked="#onMouseClicked" prefHeight="400.0" prefWidth="400.0" style="-fx-background-color: rgb(128,128,128);" BorderPane.alignment="CENTER">
+      <Pane fx:id="pane" onKeyPressed="#onKeyPressed" prefHeight="400.0" prefWidth="400.0" style="-fx-background-color: rgb(128,128,128);" BorderPane.alignment="CENTER">
          <children>
             <Button fx:id="generateMazeButton" layoutX="509.0" layoutY="51.0" mnemonicParsing="false" onAction="#onGenerateMazeButton" text="Genereaza labirint" />
             <Button fx:id="solveMazeButton" layoutX="509.0" layoutY="93.0" mnemonicParsing="false" onAction="#onSolveMazeButton" text="Rezolva labirint" />
-            <Button fx:id="backButton" layoutX="509.0" layoutY="135.0" mnemonicParsing="false" onAction="#onBackButton" text="Inapoi" />
+            <Button fx:id="menuButton" layoutX="509.0" layoutY="135.0" mnemonicParsing="false" onAction="#onMenuButton" text="Meniu" />
             <Label fx:id="currentPositionLabel" layoutX="509.0" layoutY="179.0" style="-fx-background-color: white;" />
          </children></Pane>
    </center>
