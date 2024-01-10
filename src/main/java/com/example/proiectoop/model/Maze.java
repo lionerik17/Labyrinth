@@ -3,27 +3,22 @@ package com.example.proiectoop.model;
 import java.util.*;
 
 public class Maze {
-    private int num;
-    private char[][] maze;
-    private char[][] borderedMaze;
-    private Point[][] parent;
+    private int size; // size of the maze (10 x 10)
+    private char[][] maze; // generated maze
+    private char[][] borderedMaze; // generated maze, with borders around it
+    private Point[][] parent; // used for generating the solution of the maze
 
-    public Maze(int num)
+    public Maze(int size)
     {
-        this.num = num;
-        this.maze = initMaze(getNum());
-        this.borderedMaze = initMaze(getNum() + 2);
-        this.parent = new Point[getNum()][getNum()];
+        this.size = size;
+        this.maze = initMaze(getSize());
+        this.borderedMaze = initMaze(getSize() + 2);
+        this.parent = new Point[getSize()][getSize()];
     }
 
-    public int getNum()
+    public int getSize()
     {
-        return num;
-    }
-
-    public char[][] getMaze()
-    {
-        return maze;
+        return size;
     }
 
     public char[][] getBorderedMaze()
@@ -31,23 +26,38 @@ public class Maze {
         return borderedMaze;
     }
 
+    /***
+     * Generate a random maze
+     */
+
     public void generate()
     {
-        maze[0][0] = 'O';
-        maze[getNum() - 1][getNum() - 1] = 'O';
+        int newNum = getSize() + 2;
 
-        int newNum = getNum() + 2;
+        maze[0][0] = 'O';
+        maze[getSize() - 1][getSize() - 1] = 'O';
+
         dfs();
         copyAsBordered(newNum);
     }
 
+    /***
+     * Solve a random maze
+     */
+
     public void solve()
     {
-        int newNum = getNum() + 2;
+        int newNum = getSize() + 2;
+
         bfs();
         generatePath();
         copyAsBordered(newNum);
     }
+
+    /***
+     * Surround the generated maze with walls
+     * @param newNum original size + 2
+     */
 
     private void copyAsBordered(int newNum)
     {
@@ -66,9 +76,26 @@ public class Maze {
         }
     }
 
+    /***
+     * Generate the maze using a modified DFS:
+     * 0. initialize the maze only with walls
+     * 1. push onto stack & mark as visited the start cell (0, 0)
+     * 2. while there are elements in the stack
+     * 3. get the neighboring walls of the current cell (marked as 'W')
+     * 4. if there are unvisited neighbors
+     *    choose of them
+     *    remove the wall between the current cell and the picked neighbor (both marked as ' ' for 'reasons')
+     *    mark the current cell as part of the maze
+     *    push onto stack & mark as visited the current cell
+     * 5. if there are no visited neighbors, pop the current cell and go to step 2
+
+     * There will be cases when the finish cell is surrounded with walls
+     * The fix: start the modified DFS again, but stop when the current cell is an empty cell
+     */
+
     private void dfs()
     {
-        int[][] visitedForward = initVisited(getNum());
+        int[][] visitedForward = initVisited(getSize());
         Stack<Point> stackForward = new Stack<>();
 
         stackForward.push(new Point(0, 0));
@@ -83,11 +110,11 @@ public class Maze {
             visit(visitedForward, stackForward, current, currentRow, currentCol);
         }
 
-        int[][] visitedBackward = initVisited(getNum());
-        visitedBackward[getNum() - 1][getNum() - 1] = 1;
+        int[][] visitedBackward = initVisited(getSize());
+        visitedBackward[getSize() - 1][getSize() - 1] = 1;
 
         Stack<Point> stackBackward = new Stack<>();
-        stackBackward.push(new Point(getNum() - 1, getNum() - 1));
+        stackBackward.push(new Point(getSize() - 1, getSize() - 1));
 
         while(!stackBackward.empty())
         {
@@ -104,10 +131,14 @@ public class Maze {
         }
     }
 
+    /***
+     * Solve the maze using BFS on a matrix
+     */
+
     private void bfs()
     {
         int[][] dir = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
-        int[][] visited = initVisited(getNum());
+        int[][] visited = initVisited(getSize());
 
         Queue<Point> queue = new LinkedList<>();
         queue.add(new Point(0, 0));
@@ -170,9 +201,13 @@ public class Maze {
         }
     }
 
+    /***
+     * From the BFS tree, go back to start using the parent matrix
+     */
+
     private void generatePath()
     {
-        Point current = new Point(getNum() - 1, getNum() - 1);
+        Point current = new Point(getSize() - 1, getSize() - 1);
 
         while(current != null)
         {
@@ -180,9 +215,16 @@ public class Maze {
             current = parent[current.getRow()][current.getCol()];
         }
 
+        // these will be altered by the while loop, mark them as the start and the finish again
         maze[0][0] = 'O';
-        maze[getNum() - 1][getNum() - 1] = 'O';
+        maze[getSize() - 1][getSize() - 1] = 'O';
     }
+
+    /***
+     * Step 0 of modified DFS
+     * @param num size of the maze (10 x 10)
+     * @return A maze with walls only
+     */
 
     private char[][] initMaze(int num)
     {
@@ -204,21 +246,9 @@ public class Maze {
         return new int[num][num];
     }
 
-    public void print()
-    {
-        for(int i = 0; i < borderedMaze.length; ++i)
-        {
-            for(int j = 0; j < borderedMaze[0].length; ++j)
-            {
-                System.out.print(borderedMaze[i][j]);
-            }
-            System.out.println();
-        }
-    }
-
     private boolean isValid(Point point)
     {
-        return point.getRow() >= 0 && point.getRow() < getNum() && point.getCol() >= 0 && point.getCol() < getNum();
+        return point.getRow() >= 0 && point.getRow() < getSize() && point.getCol() >= 0 && point.getCol() < getSize();
     }
 
     private List<Point> getWallNeighbors(Point point)

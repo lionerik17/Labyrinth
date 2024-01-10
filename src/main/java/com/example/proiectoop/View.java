@@ -8,13 +8,13 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class Main extends Application {
+public class View extends Application {
     @Override
     public void start(Stage stage) throws IOException
     {
-        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("scenaLabirint.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(View.class.getResource("scenaLabirint.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 640, 480);
-        Image image = new Image(Main.class.getResourceAsStream("/com/example/proiectoop/fibonacci.jpg"));
+        Image image = new Image(View.class.getResourceAsStream("/com/example/proiectoop/fibonacci.jpg"));
 
         stage.setTitle("Joc labirint");
         stage.getIcons().add(image);
